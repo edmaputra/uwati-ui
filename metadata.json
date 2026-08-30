@@ -1,0 +1,7 @@
+{
+  "name": "MedPulse Hospital Information System",
+  "description": "Enterprise Hospital Information System (HIS) with clinical dashboard, EHR patient management, bed tracking, triage queue, and medical design system components.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
