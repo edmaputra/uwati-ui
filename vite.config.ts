@@ -6,10 +6,7 @@ import { defineConfig } from 'vite';
 export default defineConfig(() => {
   return {
     plugins: [
-      angular({
-        jit: true,
-        tsconfig: './tsconfig.json',
-      }),
+      angular(),
       tailwindcss(),
     ],
     resolve: {

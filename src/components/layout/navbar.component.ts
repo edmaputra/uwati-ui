@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MedicalStateService } from '../../services/medical-state.service';
 import { Patient } from '../../types';
 
@@ -215,6 +216,7 @@ import { Patient } from '../../types';
 })
 export class NavbarComponent {
   readonly state = inject(MedicalStateService);
+  private readonly router = inject(Router);
   searchQuery = '';
   showSearchDropdown = false;
   showUserMenu = false;
@@ -252,5 +254,6 @@ export class NavbarComponent {
   logout() {
     this.showUserMenu = false;
     this.state.logout();
+    this.router.navigate(['/login']);
   }
 }
