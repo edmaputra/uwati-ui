@@ -1,0 +1,174 @@
+<c-row class="mb-3">
+  <c-col xs="12">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h2 class="h4 fw-bold mb-1">IAM User Groups & Teams</h2>
+        <p class="text-body-secondary small mb-0">
+          Organize hospital staff into teams with role inheritance and external SSO IdP group synchronization.
+        </p>
+      </div>
+      <button cButton color="primary" (click)="openCreateModal()">
+        <svg cIcon name="cilPeople" class="me-1"></svg>
+        Create Group
+      </button>
+    </div>
+  </c-col>
+</c-row>
+
+@if (alertMessage()) {
+  <c-alert [color]="alertMessage()!.type" class="d-flex align-items-center mb-3 py-2">
+    <div>{{ alertMessage()!.text }}</div>
+  </c-alert>
+}
+
+<!-- Groups Table -->
+<c-card class="shadow-sm border-0">
+  <c-card-body class="p-0">
+    <table cTable hover responsive class="mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Group Name</th>
+          <th>Description</th>
+          <th>External IdP Mapping</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (g of groups(); track g.id) {
+          <tr>
+            <td class="fw-bold text-primary">{{ g.name }}</td>
+            <td>{{ g.description || '-' }}</td>
+            <td>
+              @if (g.externalIdpGroupName) {
+                <code>{{ g.externalIdpGroupName }}</code>
+              } @else {
+                <span class="text-body-secondary small">Local group</span>
+              }
+            </td>
+            <td class="text-end">
+              <button cButton color="outline-primary" size="sm" (click)="viewMembers(g)">
+                View Members
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="text-center py-4 text-body-secondary">
+              @if (isLoading()) {
+                <div class="d-flex justify-content-center align-items-center gap-2">
+                  <c-spinner size="sm"></c-spinner>
+                  <span>Loading user groups...</span>
+                </div>
+              } @else {
+                <span>No user groups found. Click "Create Group" to add one.</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </c-card-body>
+</c-card>
+
+<!-- Create Group Modal -->
+<c-modal [(visible)]="createModalVisible" id="createGroupModal">
+  <c-modal-header>
+    <h5 cModalTitle>Create User Group</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm cRow class="g-3">
+      <c-col xs="12">
+        <label cLabel for="groupName">Group Name *</label>
+        <input
+          cFormControl
+          id="groupName"
+          placeholder="e.g. Inpatient Ward Nurses"
+          [(ngModel)]="newGroup.name"
+          name="groupName"
+          required
+        />
+      </c-col>
+
+      <c-col xs="12">
+        <label cLabel for="groupDesc">Description</label>
+        <textarea
+          cFormControl
+          id="groupDesc"
+          rows="2"
+          placeholder="Purpose and role responsibilities of this group"
+          [(ngModel)]="newGroup.description"
+          name="groupDesc"
+        ></textarea>
+      </c-col>
+
+      <c-col xs="12">
+        <label cLabel for="externalIdp">External IdP Group Name (Optional)</label>
+        <input
+          cFormControl
+          id="externalIdp"
+          placeholder="e.g. keycloak-nurses-group"
+          [(ngModel)]="newGroup.externalIdpGroupName"
+          name="externalIdp"
+        />
+      </c-col>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="createModalVisible.set(false)" [disabled]="isSubmitting()">
+      Cancel
+    </button>
+    <button cButton color="primary" (click)="submitCreate()" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <c-spinner size="sm" class="me-1"></c-spinner> Creating...
+      } @else {
+        Create Group
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- Group Members Modal -->
+<c-modal [(visible)]="membersModalVisible" id="groupMembersModal" size="lg">
+  <c-modal-header>
+    <h5 cModalTitle>Members of {{ selectedGroup?.name }}</h5>
+  </c-modal-header>
+  <c-modal-body>
+    @if (isLoadingMembers()) {
+      <div class="d-flex justify-content-center py-4">
+        <c-spinner size="sm" class="me-2"></c-spinner> Loading members...
+      </div>
+    } @else {
+      <table cTable hover responsive class="mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of groupMembers(); track m.id) {
+            <tr>
+              <td class="fw-semibold">{{ m.fullName }}</td>
+              <td><code>{{ m.email }}</code></td>
+              <td>
+                <c-badge color="success">{{ m.status }}</c-badge>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3" class="text-center py-3 text-body-secondary">
+                No users assigned to this group yet.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="membersModalVisible.set(false)">
+      Close
+    </button>
+  </c-modal-footer>
+</c-modal>

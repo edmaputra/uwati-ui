@@ -1,0 +1,204 @@
+<c-row class="mb-3">
+  <c-col xs="12">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h2 class="h4 fw-bold mb-1">Platform Tenants & Configuration</h2>
+        <p class="text-body-secondary small mb-0">
+          Provision hospital tenant organizations and configure operational parameters, numbering rules, and locale.
+        </p>
+      </div>
+      <button cButton color="primary" (click)="openCreateModal()">
+        <svg cIcon name="cilLayers" class="me-1"></svg>
+        Provision New Tenant
+      </button>
+    </div>
+  </c-col>
+</c-row>
+
+@if (alertMessage()) {
+  <c-alert [color]="alertMessage()!.type" class="d-flex align-items-center mb-3 py-2">
+    <div>{{ alertMessage()!.text }}</div>
+  </c-alert>
+}
+
+<!-- Tenant Selector Card -->
+<c-card class="shadow-sm border-0 mb-4">
+  <c-card-body class="py-3">
+    <c-row class="g-3 align-items-end">
+      <c-col md="8" sm="12">
+        <label cLabel for="tenantInputId" class="small fw-semibold">Target Tenant ID *</label>
+        <input
+          cFormControl
+          id="tenantInputId"
+          placeholder="e.g. 01955f1a-b328-7000-8000-000000000001"
+          [ngModel]="targetTenantId()"
+          (ngModelChange)="targetTenantId.set($event)"
+        />
+      </c-col>
+      <c-col md="4" sm="12" class="d-flex gap-2">
+        <button cButton color="primary" class="w-100" (click)="loadSettings()" [disabled]="isLoading()">
+          @if (isLoading()) {
+            <c-spinner size="sm" class="me-1"></c-spinner> Loading...
+          } @else {
+            Load Settings
+          }
+        </button>
+        <button
+          cButton
+          color="outline-secondary"
+          (click)="authService.setTenantId(targetTenantId())"
+          [disabled]="!targetTenantId()"
+          title="Set as active tenant for whole app"
+        >
+          Set Active
+        </button>
+      </c-col>
+    </c-row>
+  </c-card-body>
+</c-card>
+
+<!-- Tenant Settings Editor -->
+<c-card class="shadow-sm border-0">
+  <c-card-header class="d-flex justify-content-between align-items-center bg-body-tertiary">
+    <span class="fw-semibold">Operational Settings (Key-Value)</span>
+    <button
+      cButton
+      color="success"
+      class="text-white"
+      size="sm"
+      (click)="saveAllSettings()"
+      [disabled]="isSubmitting() || !targetTenantId()"
+    >
+      @if (isSubmitting()) {
+        <c-spinner size="sm" class="me-1"></c-spinner> Saving...
+      } @else {
+        Save All Changes
+      }
+    </button>
+  </c-card-header>
+  <c-card-body>
+    <!-- Add new setting row -->
+    <c-row class="g-2 mb-3 align-items-end">
+      <c-col md="5" sm="12">
+        <label cLabel class="small text-body-secondary">Setting Key</label>
+        <input
+          cFormControl
+          placeholder="e.g. time_zone, locale, currency"
+          [(ngModel)]="newKey"
+        />
+      </c-col>
+      <c-col md="5" sm="12">
+        <label cLabel class="small text-body-secondary">Setting Value</label>
+        <input
+          cFormControl
+          placeholder="e.g. Asia/Jakarta, id_ID, IDR"
+          [(ngModel)]="newValue"
+        />
+      </c-col>
+      <c-col md="2" sm="12">
+        <button cButton color="outline-primary" class="w-100" (click)="addSetting()">
+          Add Setting
+        </button>
+      </c-col>
+    </c-row>
+
+    <table cTable hover responsive class="mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 40%">Key</th>
+          <th style="width: 50%">Value</th>
+          <th style="width: 10%" class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of settings(); track s.key; let idx = $index) {
+          <tr>
+            <td>
+              <code>{{ s.key }}</code>
+            </td>
+            <td>
+              <input
+                cFormControl
+                [(ngModel)]="s.value"
+                class="form-control-sm"
+              />
+            </td>
+            <td class="text-end">
+              <button cButton color="outline-danger" size="sm" (click)="removeSetting(idx)">
+                Delete
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="3" class="text-center py-4 text-body-secondary">
+              @if (isLoading()) {
+                <span>Loading configuration settings...</span>
+              } @else if (!targetTenantId()) {
+                <span>Enter a Tenant ID and click "Load Settings" above.</span>
+              } @else {
+                <span>No settings configured for this tenant. You can add entries above.</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </c-card-body>
+</c-card>
+
+<!-- Provision Tenant Modal -->
+<c-modal [(visible)]="createModalVisible" id="provisionTenantModal">
+  <c-modal-header>
+    <h5 cModalTitle>Provision New Tenant Organization</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm cRow class="g-3">
+      <c-col xs="12">
+        <label cLabel for="legalName">Registered Legal Name *</label>
+        <input
+          cFormControl
+          id="legalName"
+          placeholder="e.g. PT Medika Nusantara Mandiri"
+          [(ngModel)]="newTenant.legalName"
+          name="legalName"
+          required
+        />
+      </c-col>
+
+      <c-col xs="12">
+        <label cLabel for="displayName">Public Display Name *</label>
+        <input
+          cFormControl
+          id="displayName"
+          placeholder="e.g. RS Medika Mandiri"
+          [(ngModel)]="newTenant.displayName"
+          name="displayName"
+          required
+        />
+      </c-col>
+    </form>
+
+    @if (createdTenant()) {
+      <div class="alert alert-success mt-3 mb-0">
+        <h6 class="alert-heading fw-bold">Tenant Successfully Created!</h6>
+        <p class="mb-1 small"><strong>Tenant ID:</strong> <code>{{ createdTenant()!.id }}</code></p>
+        <p class="mb-0 small"><strong>Status:</strong> {{ createdTenant()!.status }}</p>
+      </div>
+    }
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="createModalVisible.set(false)">
+      Close
+    </button>
+    @if (!createdTenant()) {
+      <button cButton color="primary" (click)="submitCreateTenant()" [disabled]="isSubmitting()">
+        @if (isSubmitting()) {
+          <c-spinner size="sm" class="me-1"></c-spinner> Provisioning...
+        } @else {
+          Provision Tenant
+        }
+      </button>
+    }
+  </c-modal-footer>
+</c-modal>

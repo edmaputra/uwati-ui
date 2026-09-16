@@ -1,0 +1,163 @@
+<c-row class="mb-3">
+  <c-col xs="12">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h2 class="h4 fw-bold mb-1">IAM Roles & Permissions</h2>
+        <p class="text-body-secondary small mb-0">
+          Manage system predefined roles, custom clinical roles, and fine-grained authorization policies.
+        </p>
+      </div>
+      <button cButton color="primary" (click)="openCreateModal()">
+        <svg cIcon name="cilLockLocked" class="me-1"></svg>
+        Create Custom Role
+      </button>
+    </div>
+  </c-col>
+</c-row>
+
+@if (alertMessage()) {
+  <c-alert [color]="alertMessage()!.type" class="d-flex align-items-center mb-3 py-2">
+    <div>{{ alertMessage()!.text }}</div>
+  </c-alert>
+}
+
+<c-row class="g-4">
+  <!-- Roles List -->
+  <c-col lg="7" xs="12">
+    <c-card class="shadow-sm border-0 h-100">
+      <c-card-header class="bg-body-tertiary fw-semibold">
+        Defined Roles
+      </c-card-header>
+      <c-card-body class="p-0">
+        <table cTable hover responsive class="mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Role Name</th>
+              <th>Description</th>
+              <th>Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of roles(); track r.id) {
+              <tr>
+                <td class="fw-bold text-primary">{{ r.name }}</td>
+                <td class="small">{{ r.description || '-' }}</td>
+                <td>
+                  @if (r.isSystemRole) {
+                    <c-badge color="secondary">System Role</c-badge>
+                  } @else {
+                    <c-badge color="info">Custom Role</c-badge>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="3" class="text-center py-4 text-body-secondary">
+                  @if (isLoading()) {
+                    <div class="d-flex justify-content-center align-items-center gap-2">
+                      <c-spinner size="sm"></c-spinner>
+                      <span>Loading roles...</span>
+                    </div>
+                  } @else {
+                    <span>No roles found.</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </c-card-body>
+    </c-card>
+  </c-col>
+
+  <!-- Permissions Catalog Preview -->
+  <c-col lg="5" xs="12">
+    <c-card class="shadow-sm border-0 h-100">
+      <c-card-header class="bg-body-tertiary fw-semibold d-flex justify-content-between align-items-center">
+        <span>Available Permissions Catalog</span>
+        <c-badge color="primary">{{ permissions().length }}</c-badge>
+      </c-card-header>
+      <c-card-body style="max-height: 480px; overflow-y: auto;">
+        <div class="d-flex flex-wrap gap-1">
+          @for (p of permissions(); track p) {
+            <c-badge color="light" class="text-dark border p-2 mb-1">
+              <code>{{ p }}</code>
+            </c-badge>
+          } @empty {
+            <span class="text-body-secondary small">No permissions loaded.</span>
+          }
+        </div>
+      </c-card-body>
+    </c-card>
+  </c-col>
+</c-row>
+
+<!-- Create Role Modal -->
+<c-modal [(visible)]="createModalVisible" id="createRoleModal" size="lg">
+  <c-modal-header>
+    <h5 cModalTitle>Create Custom Tenant Role</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm cRow class="g-3">
+      <c-col xs="12">
+        <label cLabel for="roleName">Role Name *</label>
+        <input
+          cFormControl
+          id="roleName"
+          placeholder="e.g. NURSE_SUPERVISOR"
+          [(ngModel)]="newRole.name"
+          name="roleName"
+          required
+        />
+      </c-col>
+
+      <c-col xs="12">
+        <label cLabel for="roleDesc">Description</label>
+        <textarea
+          cFormControl
+          id="roleDesc"
+          rows="2"
+          placeholder="Responsibilities and clinical permissions"
+          [(ngModel)]="newRole.description"
+          name="roleDesc"
+        ></textarea>
+      </c-col>
+
+      <c-col xs="12">
+        <label cLabel class="fw-semibold mb-2">Assign Permissions</label>
+        <div class="border rounded p-3" style="max-height: 250px; overflow-y: auto;">
+          <c-row class="g-2">
+            @for (p of permissions(); track p) {
+              <c-col md="6">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    [id]="'perm-' + p"
+                    [checked]="isPermissionSelected(p)"
+                    (change)="togglePermission(p)"
+                  />
+                  <label class="form-check-label small" [for]="'perm-' + p">
+                    <code>{{ p }}</code>
+                  </label>
+                </div>
+              </c-col>
+            }
+          </c-row>
+        </div>
+      </c-col>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="createModalVisible.set(false)" [disabled]="isSubmitting()">
+      Cancel
+    </button>
+    <button cButton color="primary" (click)="submitCreate()" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <c-spinner size="sm" class="me-1"></c-spinner> Creating...
+      } @else {
+        Save Role
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>

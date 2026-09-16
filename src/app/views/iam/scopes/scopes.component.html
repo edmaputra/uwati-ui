@@ -1,0 +1,126 @@
+<c-row class="mb-3">
+  <c-col xs="12">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h2 class="h4 fw-bold mb-1">Organizational Scope Hierarchy</h2>
+        <p class="text-body-secondary small mb-0">
+          Arbitrary-depth organizational tree with Materialized Path inheritance (Hospital &rarr; Building &rarr; Department &rarr; Clinic &rarr; Room).
+        </p>
+      </div>
+      <button cButton color="primary" (click)="openCreateModal()">
+        <svg cIcon name="cilList" class="me-1"></svg>
+        Add Scope Node
+      </button>
+    </div>
+  </c-col>
+</c-row>
+
+@if (alertMessage()) {
+  <c-alert [color]="alertMessage()!.type" class="d-flex align-items-center mb-3 py-2">
+    <div>{{ alertMessage()!.text }}</div>
+  </c-alert>
+}
+
+<!-- Scopes List Table -->
+<c-card class="shadow-sm border-0">
+  <c-card-body class="p-0">
+    <table cTable hover responsive class="mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Materialized Path</th>
+          <th>Parent ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of flatScopes(); track s.id) {
+          <tr>
+            <td class="fw-bold text-primary">{{ s.code }}</td>
+            <td class="fw-semibold">{{ s.name }}</td>
+            <td>
+              <code>{{ s.path || '-' }}</code>
+            </td>
+            <td class="small text-body-secondary">
+              {{ s.parentId || 'Root' }}
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="text-center py-4 text-body-secondary">
+              @if (isLoading()) {
+                <div class="d-flex justify-content-center align-items-center gap-2">
+                  <c-spinner size="sm"></c-spinner>
+                  <span>Loading scope hierarchy...</span>
+                </div>
+              } @else {
+                <span>No scope nodes found for active tenant. Click "Add Scope Node" to start building your organizational tree.</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </c-card-body>
+</c-card>
+
+<!-- Create Scope Modal -->
+<c-modal [(visible)]="createModalVisible" id="createScopeModal">
+  <c-modal-header>
+    <h5 cModalTitle>Add Scope Node</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm cRow class="g-3">
+      <c-col xs="12">
+        <label cLabel for="parentScope">Parent Scope Node (Optional)</label>
+        <select
+          cSelect
+          id="parentScope"
+          [(ngModel)]="newScope.parentId"
+          name="parentScope"
+        >
+          <option [ngValue]="undefined">None (Root Level Node)</option>
+          @for (s of flatScopes(); track s.id) {
+            <option [value]="s.id">{{ s.name }} ({{ s.code }})</option>
+          }
+        </select>
+      </c-col>
+
+      <c-col xs="12">
+        <label cLabel for="scopeCode">Scope Code *</label>
+        <input
+          cFormControl
+          id="scopeCode"
+          placeholder="e.g. DEPT-SURG"
+          [(ngModel)]="newScope.code"
+          name="scopeCode"
+          required
+        />
+      </c-col>
+
+      <c-col xs="12">
+        <label cLabel for="scopeName">Scope Name *</label>
+        <input
+          cFormControl
+          id="scopeName"
+          placeholder="e.g. Department of Surgery"
+          [(ngModel)]="newScope.name"
+          name="scopeName"
+          required
+        />
+      </c-col>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="createModalVisible.set(false)" [disabled]="isSubmitting()">
+      Cancel
+    </button>
+    <button cButton color="primary" (click)="submitCreate()" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <c-spinner size="sm" class="me-1"></c-spinner> Creating...
+      } @else {
+        Create Node
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>

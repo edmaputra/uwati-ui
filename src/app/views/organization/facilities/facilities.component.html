@@ -1,0 +1,363 @@
+<c-row class="mb-3">
+  <c-col xs="12">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h2 class="h4 fw-bold mb-1">Healthcare Facilities</h2>
+        <p class="text-body-secondary small mb-0">
+          Manage hospitals, clinics, diagnostic centers, and operational profiles under the active tenant.
+        </p>
+      </div>
+      <button cButton color="primary" (click)="openCreateModal()">
+        <svg cIcon name="cilHome" class="me-1"></svg>
+        Register New Facility
+      </button>
+    </div>
+  </c-col>
+</c-row>
+
+@if (alertMessage()) {
+  <c-alert [color]="alertMessage()!.type" class="d-flex align-items-center mb-3 py-2">
+    <div>{{ alertMessage()!.text }}</div>
+  </c-alert>
+}
+
+<!-- Filters Bar -->
+<c-card class="shadow-sm border-0 mb-4">
+  <c-card-body class="py-3">
+    <c-row class="g-3 align-items-end">
+      <c-col md="4" sm="6">
+        <label cLabel class="small text-body-secondary">Filter by Facility Type</label>
+        <select
+          cSelect
+          [ngModel]="filterType()"
+          (ngModelChange)="filterType.set($event); loadFacilities()"
+        >
+          <option value="">All Types</option>
+          @for (t of facilityTypes; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </c-col>
+
+      <c-col md="4" sm="6">
+        <label cLabel class="small text-body-secondary">Filter by Status</label>
+        <select
+          cSelect
+          [ngModel]="filterStatus()"
+          (ngModelChange)="filterStatus.set($event); loadFacilities()"
+        >
+          <option value="">All Statuses</option>
+          @for (s of facilityStatuses; track s) {
+            <option [value]="s">{{ s }}</option>
+          }
+        </select>
+      </c-col>
+
+      <c-col md="4" class="d-flex gap-2">
+        <button cButton color="outline-secondary" class="w-100" (click)="filterType.set(''); filterStatus.set(''); loadFacilities()">
+          Reset Filters
+        </button>
+        <button cButton color="outline-primary" class="w-100" (click)="loadFacilities()">
+          Refresh
+        </button>
+      </c-col>
+    </c-row>
+  </c-card-body>
+</c-card>
+
+<!-- Facilities Table -->
+<c-card class="shadow-sm border-0">
+  <c-card-body class="p-0">
+    <table cTable hover responsive class="mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Classification</th>
+          <th>Registry Code</th>
+          <th>Status</th>
+          <th>Contact</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (f of facilities(); track f.id) {
+          <tr>
+            <td class="fw-bold text-primary">{{ f.code }}</td>
+            <td>
+              <div class="fw-semibold">{{ f.name }}</div>
+              @if (f.address) {
+                <div class="small text-body-secondary text-truncate" style="max-width: 250px;">
+                  {{ f.address }}
+                </div>
+              }
+            </td>
+            <td>
+              <c-badge color="info">{{ f.type }}</c-badge>
+            </td>
+            <td>{{ f.classification }}</td>
+            <td>
+              <code>{{ f.nationalRegistryCode || '-' }}</code>
+            </td>
+            <td>
+              @if (f.status === 'ACTIVE') {
+                <c-badge color="success">ACTIVE</c-badge>
+              } @else if (f.status === 'UNDER_MAINTENANCE') {
+                <c-badge color="warning">MAINTENANCE</c-badge>
+              } @else if (f.status === 'DECOMMISSIONED') {
+                <c-badge color="danger">DECOMMISSIONED</c-badge>
+              } @else {
+                <c-badge color="secondary">{{ f.status }}</c-badge>
+              }
+            </td>
+            <td class="small">{{ f.phone || '-' }}</td>
+            <td class="text-end">
+              <div class="btn-group">
+                <button cButton color="outline-secondary" size="sm" (click)="openEditModal(f)">
+                  Edit
+                </button>
+                <button cButton color="outline-primary" size="sm" (click)="openStatusModal(f)">
+                  Status
+                </button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="text-center py-4 text-body-secondary">
+              @if (isLoading()) {
+                <div class="d-flex justify-content-center align-items-center gap-2">
+                  <c-spinner size="sm"></c-spinner>
+                  <span>Loading facilities...</span>
+                </div>
+              } @else {
+                <span>No facilities found for current tenant. Click "Register New Facility" above to add one.</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </c-card-body>
+</c-card>
+
+<!-- Create Facility Modal -->
+<c-modal [(visible)]="createModalVisible" id="createFacilityModal" size="lg">
+  <c-modal-header>
+    <h5 cModalTitle>Register Healthcare Facility</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm cRow class="g-3">
+      <c-col md="6">
+        <label cLabel for="facilityCode">Facility Code *</label>
+        <input
+          cFormControl
+          id="facilityCode"
+          placeholder="e.g. RS-MAIN-01"
+          [(ngModel)]="newFacility.code"
+          name="facilityCode"
+          required
+        />
+      </c-col>
+
+      <c-col md="6">
+        <label cLabel for="facilityName">Facility Name *</label>
+        <input
+          cFormControl
+          id="facilityName"
+          placeholder="e.g. Central City General Hospital"
+          [(ngModel)]="newFacility.name"
+          name="facilityName"
+          required
+        />
+      </c-col>
+
+      <c-col md="6">
+        <label cLabel for="facilityType">Facility Type *</label>
+        <select
+          cSelect
+          id="facilityType"
+          [(ngModel)]="newFacility.type"
+          name="facilityType"
+        >
+          @for (t of facilityTypes; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </c-col>
+
+      <c-col md="6">
+        <label cLabel for="facilityClassification">Classification *</label>
+        <select
+          cSelect
+          id="facilityClassification"
+          [(ngModel)]="newFacility.classification"
+          name="facilityClassification"
+        >
+          @for (c of classifications; track c) {
+            <option [value]="c">{{ c }}</option>
+          }
+        </select>
+      </c-col>
+
+      <c-col md="6">
+        <label cLabel for="nationalRegistryCode">National Registry Code (SATUSEHAT / BPJS)</label>
+        <input
+          cFormControl
+          id="nationalRegistryCode"
+          placeholder="e.g. 31710123"
+          [(ngModel)]="newFacility.nationalRegistryCode"
+          name="nationalRegistryCode"
+        />
+      </c-col>
+
+      <c-col md="6">
+        <label cLabel for="phone">Phone Number</label>
+        <input
+          cFormControl
+          id="phone"
+          placeholder="e.g. +62 21 555 1234"
+          [(ngModel)]="newFacility.phone"
+          name="phone"
+        />
+      </c-col>
+
+      <c-col xs="12">
+        <label cLabel for="address">Physical Address</label>
+        <textarea
+          cFormControl
+          id="address"
+          rows="2"
+          placeholder="Street, City, Postal Code"
+          [(ngModel)]="newFacility.address"
+          name="address"
+        ></textarea>
+      </c-col>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="createModalVisible.set(false)" [disabled]="isSubmitting()">
+      Cancel
+    </button>
+    <button cButton color="primary" (click)="submitCreate()" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <c-spinner size="sm" class="me-1"></c-spinner> Saving...
+      } @else {
+        Create Facility
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- Edit Facility Modal -->
+<c-modal [(visible)]="editModalVisible" id="editFacilityModal" size="lg">
+  <c-modal-header>
+    <h5 cModalTitle>Update Facility Details</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm cRow class="g-3">
+      <c-col xs="12">
+        <label cLabel for="editName">Facility Name *</label>
+        <input
+          cFormControl
+          id="editName"
+          [(ngModel)]="editPayload.name"
+          name="editName"
+          required
+        />
+      </c-col>
+
+      <c-col md="6">
+        <label cLabel for="editClassification">Classification</label>
+        <select
+          cSelect
+          id="editClassification"
+          [(ngModel)]="editPayload.classification"
+          name="editClassification"
+        >
+          @for (c of classifications; track c) {
+            <option [value]="c">{{ c }}</option>
+          }
+        </select>
+      </c-col>
+
+      <c-col md="6">
+        <label cLabel for="editNationalCode">National Registry Code</label>
+        <input
+          cFormControl
+          id="editNationalCode"
+          [(ngModel)]="editPayload.nationalRegistryCode"
+          name="editNationalCode"
+        />
+      </c-col>
+
+      <c-col md="6">
+        <label cLabel for="editPhone">Phone Number</label>
+        <input
+          cFormControl
+          id="editPhone"
+          [(ngModel)]="editPayload.phone"
+          name="editPhone"
+        />
+      </c-col>
+
+      <c-col xs="12">
+        <label cLabel for="editAddress">Address</label>
+        <textarea
+          cFormControl
+          id="editAddress"
+          rows="2"
+          [(ngModel)]="editPayload.address"
+          name="editAddress"
+        ></textarea>
+      </c-col>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="editModalVisible.set(false)" [disabled]="isSubmitting()">
+      Cancel
+    </button>
+    <button cButton color="primary" (click)="submitEdit()" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <c-spinner size="sm" class="me-1"></c-spinner> Updating...
+      } @else {
+        Save Changes
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- Change Status Modal -->
+<c-modal [(visible)]="statusModalVisible" id="changeStatusModal">
+  <c-modal-header>
+    <h5 cModalTitle>Change Operational Status</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <p>
+      Change status for: <strong>{{ statusTargetFacility?.name }}</strong>
+    </p>
+    <label cLabel for="facilityStatusSelect">Select Status</label>
+    <select
+      cSelect
+      id="facilityStatusSelect"
+      [(ngModel)]="selectedNewStatus"
+    >
+      @for (s of facilityStatuses; track s) {
+        <option [value]="s">{{ s }}</option>
+      }
+    </select>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="statusModalVisible.set(false)" [disabled]="isSubmitting()">
+      Cancel
+    </button>
+    <button cButton color="primary" (click)="submitStatusChange()" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <c-spinner size="sm" class="me-1"></c-spinner> Updating...
+      } @else {
+        Update Status
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>
