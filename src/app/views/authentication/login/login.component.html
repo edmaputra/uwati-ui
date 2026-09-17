@@ -1,0 +1,120 @@
+<c-container>
+  <c-row class="justify-content-center">
+    <c-col lg="6" md="8" xl="5">
+      <div class="d-flex flex-column gap-4">
+        <div class="text-center">
+          <h1 class="h3 fw-bold text-primary mb-1">Uwati HIS</h1>
+          <p class="text-body-secondary small">Hospital Information System Platform</p>
+        </div>
+
+        <c-card class="p-4 shadow-sm border-0">
+          <c-card-body class="d-flex flex-column gap-3">
+            <h2 class="h5 text-center mb-1">Sign in to your account</h2>
+            <p class="text-center text-body-secondary small mb-3">
+              Enter your clinical or administrative credentials
+            </p>
+
+            @if (errorMessage()) {
+              <c-alert color="danger" class="d-flex align-items-center py-2">
+                <div>{{ errorMessage() }}</div>
+              </c-alert>
+            }
+
+            <form cForm cRow class="gy-3" (ngSubmit)="onSubmit()">
+              <c-col xs="12">
+                <label cLabel for="tenantId">Tenant ID (Optional for Superadmin)</label>
+                <input
+                  cFormControl
+                  id="tenantId"
+                  placeholder="e.g. 01955f1a-b328-7000-8000-000000000001"
+                  type="text"
+                  [(ngModel)]="tenantId"
+                  name="tenantId"
+                />
+              </c-col>
+
+              <c-col xs="12">
+                <label cLabel for="email">Email Address</label>
+                <input
+                  autocomplete="email"
+                  cFormControl
+                  id="email"
+                  placeholder="doctor@hospital.org"
+                  type="email"
+                  required
+                  [(ngModel)]="email"
+                  name="email"
+                />
+              </c-col>
+
+              <c-col xs="12">
+                <label cLabel for="password">Password</label>
+                <c-input-group>
+                  <input
+                    autocomplete="current-password"
+                    cFormControl
+                    id="password"
+                    placeholder="Enter your password"
+                    [type]="showPassword ? 'text' : 'password'"
+                    required
+                    [(ngModel)]="password"
+                    name="password"
+                  />
+                  <span cInputGroupText>
+                    <button
+                      cButton
+                      class="p-0 link-secondary"
+                      color="link"
+                      type="button"
+                      (click)="togglePassword()"
+                    >
+                      <svg cIcon name="eye" size="sm"></svg>
+                    </button>
+                  </span>
+                </c-input-group>
+              </c-col>
+
+              <c-col xs="12" class="mt-4 d-flex flex-column gap-2">
+                <button
+                  cButton
+                  class="w-100 py-2 d-flex align-items-center justify-content-center"
+                  color="primary"
+                  type="submit"
+                  [disabled]="isLoading()"
+                >
+                  @if (isLoading()) {
+                    <c-spinner size="sm" class="me-2"></c-spinner>
+                    Signing In...
+                  } @else {
+                    Sign In
+                  }
+                </button>
+
+                <div class="position-relative text-center my-2">
+                  <hr class="text-body-tertiary my-0" />
+                  <span class="position-absolute top-50 start-50 translate-middle px-2 bg-white small text-body-secondary">
+                    or
+                  </span>
+                </div>
+
+                <button
+                  cButton
+                  class="w-100 py-2 fw-semibold"
+                  color="success"
+                  type="button"
+                  (click)="onBypass()"
+                >
+                  ⚡ Bypass & View Main Page (Demo Mode)
+                </button>
+              </c-col>
+            </form>
+          </c-card-body>
+        </c-card>
+
+        <div class="text-center text-body-secondary small">
+          Uwati HIS Multi-tenant Core &bull; Secure Authentication &bull; Scoped RBAC
+        </div>
+      </div>
+    </c-col>
+  </c-row>
+</c-container>

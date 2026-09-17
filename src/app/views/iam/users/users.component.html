@@ -1,0 +1,216 @@
+<c-row class="mb-3">
+  <c-col xs="12">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h2 class="h4 fw-bold mb-1">IAM Users & Accounts</h2>
+        <p class="text-body-secondary small mb-0">
+          Manage clinical practitioners, nursing staff, administrative operators, and platform superadmins.
+        </p>
+      </div>
+      <button cButton color="primary" (click)="openCreateModal()">
+        <svg cIcon name="cilUser" class="me-1"></svg>
+        Provision New User
+      </button>
+    </div>
+  </c-col>
+</c-row>
+
+@if (alertMessage()) {
+  <c-alert [color]="alertMessage()!.type" class="d-flex align-items-center mb-3 py-2">
+    <div>{{ alertMessage()!.text }}</div>
+  </c-alert>
+}
+
+<!-- Filters Bar -->
+<c-card class="shadow-sm border-0 mb-4">
+  <c-card-body class="py-3">
+    <c-row class="g-3 align-items-end">
+      <c-col md="6" sm="12">
+        <label cLabel class="small text-body-secondary">Search Users</label>
+        <input
+          cFormControl
+          placeholder="Search by name or email..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          (keyup.enter)="loadUsers()"
+        />
+      </c-col>
+      <c-col md="3" sm="6">
+        <label cLabel class="small text-body-secondary">Filter by Status</label>
+        <select
+          cSelect
+          [ngModel]="statusFilter()"
+          (ngModelChange)="statusFilter.set($event); loadUsers()"
+        >
+          <option value="">All Statuses</option>
+          @for (s of userStatuses; track s) {
+            <option [value]="s">{{ s }}</option>
+          }
+        </select>
+      </c-col>
+      <c-col md="3" sm="6" class="d-flex gap-2">
+        <button cButton color="outline-primary" class="w-100" (click)="loadUsers()">
+          Search
+        </button>
+        <button cButton color="outline-secondary" class="w-100" (click)="searchQuery.set(''); statusFilter.set(''); loadUsers()">
+          Reset
+        </button>
+      </c-col>
+    </c-row>
+  </c-card-body>
+</c-card>
+
+<!-- Users Table -->
+<c-card class="shadow-sm border-0">
+  <c-card-body class="p-0">
+    <table cTable hover responsive class="mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Full Name</th>
+          <th>Email Address</th>
+          <th>Status</th>
+          <th>Created At</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of users(); track u.id) {
+          <tr>
+            <td class="fw-semibold">{{ u.fullName }}</td>
+            <td>
+              <code>{{ u.email }}</code>
+            </td>
+            <td>
+              @if (u.status === 'ACTIVE') {
+                <c-badge color="success">ACTIVE</c-badge>
+              } @else if (u.status === 'SUSPENDED') {
+                <c-badge color="warning">SUSPENDED</c-badge>
+              } @else {
+                <c-badge color="danger">DEACTIVATED</c-badge>
+              }
+            </td>
+            <td class="small text-body-secondary">{{ u.createdAt | date:'short' }}</td>
+            <td class="text-end">
+              <button cButton color="outline-primary" size="sm" (click)="openStatusModal(u)">
+                Change Status
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="text-center py-4 text-body-secondary">
+              @if (isLoading()) {
+                <div class="d-flex justify-content-center align-items-center gap-2">
+                  <c-spinner size="sm"></c-spinner>
+                  <span>Loading IAM users...</span>
+                </div>
+              } @else {
+                <span>No users found matching query. Click "Provision New User" to add an account.</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </c-card-body>
+</c-card>
+
+<!-- Create User Modal -->
+<c-modal [(visible)]="createModalVisible" id="createUserModal">
+  <c-modal-header>
+    <h5 cModalTitle>Provision New User</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm cRow class="g-3">
+      <c-col xs="12">
+        <label cLabel for="fullName">Full Name *</label>
+        <input
+          cFormControl
+          id="fullName"
+          placeholder="Dr. John Doe, Sp.PD"
+          [(ngModel)]="newUser.fullName"
+          name="fullName"
+          required
+        />
+      </c-col>
+
+      <c-col xs="12">
+        <label cLabel for="userEmail">Email Address *</label>
+        <input
+          cFormControl
+          id="userEmail"
+          type="email"
+          placeholder="john.doe@hospital.org"
+          [(ngModel)]="newUser.email"
+          name="userEmail"
+          required
+        />
+      </c-col>
+
+      <c-col xs="12">
+        <label cLabel for="initialPassword">Initial Password</label>
+        <input
+          cFormControl
+          id="initialPassword"
+          type="password"
+          placeholder="Leave blank or enter initial temporary password"
+          [(ngModel)]="newUser.password"
+          name="initialPassword"
+        />
+      </c-col>
+
+      <c-col xs="12">
+        <label cLabel for="initialStatus">Initial Status</label>
+        <select
+          cSelect
+          id="initialStatus"
+          [(ngModel)]="newUser.status"
+          name="initialStatus"
+        >
+          @for (s of userStatuses; track s) {
+            <option [value]="s">{{ s }}</option>
+          }
+        </select>
+      </c-col>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="createModalVisible.set(false)" [disabled]="isSubmitting()">
+      Cancel
+    </button>
+    <button cButton color="primary" (click)="submitCreate()" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <c-spinner size="sm" class="me-1"></c-spinner> Creating...
+      } @else {
+        Create User
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- Change Status Modal -->
+<c-modal [(visible)]="statusModalVisible" id="changeUserStatusModal">
+  <c-modal-header>
+    <h5 cModalTitle>Update User Status</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <p>Change status for: <strong>{{ targetUser?.fullName }}</strong> ({{ targetUser?.email }})</p>
+    <select cSelect [(ngModel)]="selectedStatus">
+      @for (s of userStatuses; track s) {
+        <option [value]="s">{{ s }}</option>
+      }
+    </select>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="statusModalVisible.set(false)" [disabled]="isSubmitting()">
+      Cancel
+    </button>
+    <button cButton color="primary" (click)="submitStatusChange()" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <c-spinner size="sm" class="me-1"></c-spinner> Updating...
+      } @else {
+        Save Status
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>

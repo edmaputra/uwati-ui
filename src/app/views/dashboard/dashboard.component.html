@@ -1,0 +1,160 @@
+<c-row class="g-4 mb-4">
+  <!-- Metric 1: Total Facilities -->
+  <c-col sm="6" xl="3">
+    <c-card class="text-white bg-primary shadow-sm border-0">
+      <c-card-body class="pb-3 d-flex justify-content-between align-items-start">
+        <div>
+          <div class="fs-4 fw-semibold">{{ totalFacilities() }}</div>
+          <div class="small text-white-50 text-uppercase fw-semibold">Total Facilities</div>
+        </div>
+        <svg cIcon name="cilHome" size="2xl"></svg>
+      </c-card-body>
+      <div class="px-3 pb-2 small text-white-50">
+        {{ hospitalCount() }} Hospitals &bull; {{ clinicCount() }} Clinics
+      </div>
+    </c-card>
+  </c-col>
+
+  <!-- Metric 2: Active Facilities -->
+  <c-col sm="6" xl="3">
+    <c-card class="text-white bg-success shadow-sm border-0">
+      <c-card-body class="pb-3 d-flex justify-content-between align-items-start">
+        <div>
+          <div class="fs-4 fw-semibold">{{ activeFacilities() }}</div>
+          <div class="small text-white-50 text-uppercase fw-semibold">Operational Facilities</div>
+        </div>
+        <svg cIcon name="cilCheck" size="2xl"></svg>
+      </c-card-body>
+      <div class="px-3 pb-2 small text-white-50">
+        Active status across registered network
+      </div>
+    </c-card>
+  </c-col>
+
+  <!-- Metric 3: Active Tenant -->
+  <c-col sm="6" xl="3">
+    <c-card class="text-white bg-info shadow-sm border-0">
+      <c-card-body class="pb-3 d-flex justify-content-between align-items-start">
+        <div>
+          <div class="fs-6 fw-semibold text-truncate" style="max-width: 180px;">
+            {{ authService.activeTenantId() || 'Not Selected' }}
+          </div>
+          <div class="small text-white-50 text-uppercase fw-semibold">Active Tenant Context</div>
+        </div>
+        <svg cIcon name="cilLayers" size="2xl"></svg>
+      </c-card-body>
+      <div class="px-3 pb-2 small text-white-50">
+        ScopedValue Multi-tenant isolation
+      </div>
+    </c-card>
+  </c-col>
+
+  <!-- Metric 4: Current Actor Role -->
+  <c-col sm="6" xl="3">
+    <c-card class="text-white bg-warning shadow-sm border-0">
+      <c-card-body class="pb-3 d-flex justify-content-between align-items-start">
+        <div>
+          <div class="fs-5 fw-semibold text-truncate" style="max-width: 180px;">
+            {{ authService.currentUser()?.fullName || 'Authenticated' }}
+          </div>
+          <div class="small text-white-50 text-uppercase fw-semibold">Authenticated Operator</div>
+        </div>
+        <svg cIcon name="cilUser" size="2xl"></svg>
+      </c-card-body>
+      <div class="px-3 pb-2 small text-white-50">
+        {{ authService.currentUser()?.roles?.join(', ') || 'Staff' }}
+      </div>
+    </c-card>
+  </c-col>
+</c-row>
+
+<!-- Quick Action shortcuts -->
+<c-row class="g-4 mb-4">
+  <c-col xs="12">
+    <c-card class="shadow-sm border-0">
+      <c-card-header class="bg-body-tertiary fw-semibold">
+        Hospital Operations & Administration Quick Links
+      </c-card-header>
+      <c-card-body class="d-flex flex-wrap gap-2">
+        <a cButton color="primary" routerLink="/organization/facilities">
+          <svg cIcon name="cilHome" class="me-1"></svg>
+          Manage Facilities
+        </a>
+        <a cButton color="info" routerLink="/organization/service-units" class="text-white">
+          <svg cIcon name="cilGrid" class="me-1"></svg>
+          Manage Service Units
+        </a>
+        <a cButton color="secondary" routerLink="/tenancy">
+          <svg cIcon name="cilLayers" class="me-1"></svg>
+          Platform Tenants & Settings
+        </a>
+        <a cButton color="dark" routerLink="/iam/users">
+          <svg cIcon name="cilUser" class="me-1"></svg>
+          IAM Users & Roles
+        </a>
+      </c-card-body>
+    </c-card>
+  </c-col>
+</c-row>
+
+<!-- Recent Facilities Table -->
+<c-row>
+  <c-col xs="12">
+    <c-card class="shadow-sm border-0">
+      <c-card-header class="d-flex justify-content-between align-items-center bg-body-tertiary">
+        <span class="fw-semibold">Registered Healthcare Facilities</span>
+        <button cButton color="outline-primary" size="sm" (click)="loadFacilities()">
+          Refresh
+        </button>
+      </c-card-header>
+      <c-card-body class="p-0">
+        <table cTable hover responsive class="mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Facility Code</th>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Classification</th>
+              <th>Status</th>
+              <th>Phone</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (f of facilities(); track f.id) {
+              <tr>
+                <td class="fw-bold text-primary">{{ f.code }}</td>
+                <td>{{ f.name }}</td>
+                <td>
+                  <c-badge color="info">{{ f.type }}</c-badge>
+                </td>
+                <td>{{ f.classification }}</td>
+                <td>
+                  @if (f.status === 'ACTIVE') {
+                    <c-badge color="success">ACTIVE</c-badge>
+                  } @else if (f.status === 'UNDER_MAINTENANCE') {
+                    <c-badge color="warning">MAINTENANCE</c-badge>
+                  } @else {
+                    <c-badge color="secondary">{{ f.status }}</c-badge>
+                  }
+                </td>
+                <td>{{ f.phone || '-' }}</td>
+                <td class="small text-body-secondary">{{ f.createdAt | date:'short' }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="text-center py-4 text-body-secondary">
+                  @if (isLoadingFacilities()) {
+                    <span>Loading facilities...</span>
+                  } @else {
+                    <span>No facilities registered yet or tenant context not set. <a routerLink="/organization/facilities">Add a facility</a> to get started.</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </c-card-body>
+    </c-card>
+  </c-col>
+</c-row>
