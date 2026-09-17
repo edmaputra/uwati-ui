@@ -1,43 +1,62 @@
 {
-  "name": "medpulse-his",
+  "name": "uwati-ui",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "config": {
+    "theme": "default",
+    "coreui_library_short_version": "5.7",
+    "coreui_library_docs_url": "https://coreui.io/angular/docs/"
+  },
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build",
-    "preview": "vite preview",
-    "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "ng": "ng",
+    "start": "ng serve --proxy-config proxy.conf.json",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
   },
   "dependencies": {
-    "@analogjs/vite-plugin-angular": "^2.7.1",
-    "@angular/build": "^22.1.6",
-    "@angular/common": "^22.1.4",
-    "@angular/compiler": "^22.1.4",
-    "@angular/compiler-cli": "^22.1.4",
-    "@angular/core": "^22.1.4",
-    "@angular/forms": "^22.1.4",
-    "@angular/platform-browser": "^22.1.4",
-    "@angular/router": "^22.1.4",
-    "@google/genai": "^2.4.0",
-    "@tailwindcss/vite": "^4.1.14",
-    "dotenv": "^17.2.3",
-    "express": "^4.21.2",
-    "motion": "^12.23.24",
-    "rxjs": "^7.8.2",
-    "tslib": "^2.8.1",
-    "vite": "^6.2.3",
-    "zone.js": "^0.16.2"
+    "@angular/aria": "^22.1.5",
+    "@angular/cdk": "^22.1.5",
+    "@angular/common": "^22.1.5",
+    "@angular/compiler": "^22.1.5",
+    "@angular/core": "^22.1.5",
+    "@angular/forms": "^22.1.5",
+    "@angular/language-service": "^22.1.5",
+    "@angular/localize": "^22.1.5",
+    "@angular/platform-browser": "^22.1.5",
+    "@angular/router": "^22.1.5",
+    "@coreui/angular": "~5.7.28",
+    "@coreui/angular-chartjs": "~5.7.28",
+    "@coreui/chartjs": "^4.2.0",
+    "@coreui/coreui": "^5.9.0",
+    "@coreui/icons": "^3.1.0",
+    "@coreui/icons-angular": "~5.7.28",
+    "@coreui/utils": "^2.0.2",
+    "chart.js": "^4.5.1",
+    "ngx-scrollbar": "^13.0.3",
+    "rxjs": "~7.8.2",
+    "tslib": "^2.8.1"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^22.14.0",
-    "autoprefixer": "^10.4.21",
-    "esbuild": "^0.25.0",
-    "tailwindcss": "^4.1.14",
-    "tsx": "^4.21.0",
-    "typescript": "6.0.3",
-    "vite": "^6.2.3"
+    "@angular/build": "^22.1.7",
+    "@angular/cli": "^22.1.7",
+    "@angular/compiler-cli": "^22.1.5",
+    "@types/node": "^26.4.1",
+    "@vitest/browser-playwright": "^4.1.11",
+    "jsdom": "^30.0.1",
+    "playwright": "^1.62.1",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": "^22.22.3 || ^24.15.0 || ^26.0.0",
+    "npm": ">=10"
+  },
+  "bugs": {
+    "url": "https://github.com/coreui/coreui-free-angular-admin-template/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coreui/coreui-free-angular-admin-template.git"
   }
 }
