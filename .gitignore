@@ -2,7 +2,18 @@ node_modules/
 build/
 dist/
 coverage/
+.angular/
+.idea/
+.vscode/
+*.iml
 .DS_Store
+Thumbs.db
 *.log
 .env*
 !.env.example
+
+# AI Agent runtime artifacts
+project-structure.json
+.project-structure.json
+.agents/project-structure.json
+
