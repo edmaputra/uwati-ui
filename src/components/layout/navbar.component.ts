@@ -1,13 +1,14 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MedicalStateService } from '../../services/medical-state.service';
-import { Patient } from '../../types';
+import { Patient, UserRole } from '../../types';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   template: `
     <header class="bg-slate-900 border-b border-slate-800 text-white sticky top-0 z-30 shadow-md">
@@ -41,14 +42,15 @@ import { Patient } from '../../types';
             </div>
             <input
               type="text"
-              [(ngModel)]="searchQuery"
-              (focus)="showSearchDropdown = true"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+              (focus)="showSearchDropdown.set(true)"
               placeholder="Omni-Search by Patient Name, MRN (e.g. 849201), Bed, or Doctor..."
               class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl pl-9 pr-8 py-1.5 text-xs text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all font-sans"
             />
             <button
-              *ngIf="searchQuery"
-              (click)="searchQuery = ''"
+              *ngIf="searchQuery()"
+              (click)="searchQuery.set('')"
               class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200"
             >
               ✕
@@ -57,7 +59,7 @@ import { Patient } from '../../types';
 
           <!-- Dropdown Results -->
           <div
-            *ngIf="searchQuery && showSearchDropdown"
+            *ngIf="searchQuery() && showSearchDropdown()"
             class="absolute top-full mt-1.5 left-0 right-0 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 text-xs"
           >
             <div class="p-2 border-b border-slate-800 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
@@ -124,7 +126,7 @@ import { Patient } from '../../types';
           <!-- Active Staff Switcher Dropdown -->
           <div class="relative">
             <button
-              (click)="showUserMenu = !showUserMenu"
+              (click)="showUserMenu.set(!showUserMenu())"
               class="flex items-center gap-2 pl-2 pr-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 border border-slate-700/80 transition-colors cursor-pointer text-left"
             >
               <div class="w-7 h-7 rounded-lg bg-slate-700 text-sky-400 font-bold flex items-center justify-center text-xs ring-1 ring-white/10 font-mono">
@@ -141,7 +143,7 @@ import { Patient } from '../../types';
 
             <!-- Role Dropdown -->
             <div
-              *ngIf="showUserMenu"
+              *ngIf="showUserMenu()"
               class="absolute right-0 mt-2 w-64 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-2 z-50 text-xs text-slate-200 divide-y divide-slate-800"
             >
               <div class="p-2">
@@ -217,12 +219,12 @@ import { Patient } from '../../types';
 export class NavbarComponent {
   readonly state = inject(MedicalStateService);
   private readonly router = inject(Router);
-  searchQuery = '';
-  showSearchDropdown = false;
-  showUserMenu = false;
+  readonly searchQuery = signal('');
+  readonly showSearchDropdown = signal(false);
+  readonly showUserMenu = signal(false);
 
   readonly filteredPatients = computed(() => {
-    const q = this.searchQuery.toLowerCase().trim();
+    const q = this.searchQuery().toLowerCase().trim();
     if (!q) return [];
     return this.state.patients().filter(
       p =>
@@ -242,17 +244,17 @@ export class NavbarComponent {
 
   onSelectPatient(patient: Patient) {
     this.state.openPatientModal(patient);
-    this.searchQuery = '';
-    this.showSearchDropdown = false;
+    this.searchQuery.set('');
+    this.showSearchDropdown.set(false);
   }
 
-  selectRole(role: any) {
+  selectRole(role: UserRole) {
     this.state.switchRole(role);
-    this.showUserMenu = false;
+    this.showUserMenu.set(false);
   }
 
   logout() {
-    this.showUserMenu = false;
+    this.showUserMenu.set(false);
     this.state.logout();
     this.router.navigate(['/login']);
   }

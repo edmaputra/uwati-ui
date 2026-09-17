@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MedicalStateService } from '../../services/medical-state.service';
@@ -8,6 +8,7 @@ import { Bed, WardType, BedStatus } from '../../types';
 @Component({
   selector: 'app-bed-matrix-view',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, BedStatusBadgeComponent],
   template: `
     <div class="space-y-6 pb-12">
@@ -31,7 +32,7 @@ import { Bed, WardType, BedStatus } from '../../types';
         <!-- Filter Ward -->
         <div class="flex items-center gap-2 text-xs">
           <label class="font-semibold text-slate-600">Filter Ward:</label>
-          <select [(ngModel)]="filterWard" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-sans">
+          <select [ngModel]="filterWard()" (ngModelChange)="filterWard.set($event)" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-sans">
             <option value="ALL">All Wards ({{ state.beds().length }} beds)</option>
             <option value="ICU">Intensive Care Unit (ICU)</option>
             <option value="Emergency (ED)">Emergency Department (ED)</option>
@@ -160,11 +161,12 @@ import { Bed, WardType, BedStatus } from '../../types';
 })
 export class BedMatrixViewComponent {
   readonly state = inject(MedicalStateService);
-  filterWard: WardType | 'ALL' = 'ALL';
+  readonly filterWard = signal<WardType | 'ALL'>('ALL');
 
   readonly filteredBeds = computed(() => {
-    if (this.filterWard === 'ALL') return this.state.beds();
-    return this.state.beds().filter((b) => b.ward === this.filterWard);
+    const ward = this.filterWard();
+    if (ward === 'ALL') return this.state.beds();
+    return this.state.beds().filter((b) => b.ward === ward);
   });
 
   countByStatus(status: BedStatus): number {

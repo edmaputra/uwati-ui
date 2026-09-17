@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MedicalStateService } from '../../services/medical-state.service';
@@ -8,6 +8,7 @@ import { TriageQueueItem, TriageLevel, TriageZone } from '../../types';
 @Component({
   selector: 'app-triage-view',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, TriageBadgeComponent],
   template: `
     <div class="space-y-6 pb-12">
@@ -29,7 +30,7 @@ import { TriageQueueItem, TriageLevel, TriageZone } from '../../types';
         </div>
 
         <button
-          (click)="showNewTriageForm = !showNewTriageForm"
+          (click)="showNewTriageForm.set(!showNewTriageForm())"
           class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs flex items-center gap-2 transition-colors cursor-pointer"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -40,10 +41,10 @@ import { TriageQueueItem, TriageLevel, TriageZone } from '../../types';
       </div>
 
       <!-- New Triage Registration Form (Toggleable) -->
-      <div *ngIf="showNewTriageForm" class="bg-white p-5 rounded-2xl border-2 border-rose-300 shadow-lg space-y-4 animate-in fade-in duration-150">
+      <div *ngIf="showNewTriageForm()" class="bg-white p-5 rounded-2xl border-2 border-rose-300 shadow-lg space-y-4 animate-in fade-in duration-150">
         <div class="flex items-center justify-between border-b border-slate-100 pb-2">
           <h2 class="font-bold text-slate-900 text-sm">Emergency Patient Intake & Triage Assessment</h2>
-          <button (click)="showNewTriageForm = false" class="text-slate-400 hover:text-slate-600">✕</button>
+          <button (click)="showNewTriageForm.set(false)" class="text-slate-400 hover:text-slate-600">✕</button>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3 text-xs">
@@ -102,7 +103,7 @@ import { TriageQueueItem, TriageLevel, TriageZone } from '../../types';
         </div>
 
         <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
-          <button (click)="showNewTriageForm = false" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer">Cancel</button>
+          <button (click)="showNewTriageForm.set(false)" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer">Cancel</button>
           <button (click)="submitTriage()" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer">Commit Triage Entry</button>
         </div>
       </div>
@@ -186,7 +187,7 @@ import { TriageQueueItem, TriageLevel, TriageZone } from '../../types';
 })
 export class TriageViewComponent {
   readonly state = inject(MedicalStateService);
-  showNewTriageForm = false;
+  readonly showNewTriageForm = signal(false);
 
   formName = '';
   formAge = 45;
@@ -227,7 +228,7 @@ export class TriageViewComponent {
     };
 
     this.state.addTriagePatient(newItem);
-    this.showNewTriageForm = false;
+    this.showNewTriageForm.set(false);
     this.formName = '';
     this.formComplaint = '';
   }

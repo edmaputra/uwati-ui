@@ -1,10 +1,11 @@
-import { Component, Input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TriageLevel, PatientStatus, BedStatus } from '../../types';
 
 @Component({
   selector: 'app-triage-badge',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <span
@@ -64,6 +65,7 @@ export class TriageBadgeComponent {
 @Component({
   selector: 'app-patient-status-badge',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <span
@@ -108,6 +110,7 @@ export class PatientStatusBadgeComponent {
 @Component({
   selector: 'app-bed-status-badge',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <span
@@ -136,6 +139,7 @@ export class BedStatusBadgeComponent {
 @Component({
   selector: 'app-vital-pill',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div
@@ -166,6 +170,7 @@ export class VitalPillComponent {
 @Component({
   selector: 'app-allergy-tag',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200">

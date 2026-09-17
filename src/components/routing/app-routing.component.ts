@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterLink } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -14,6 +14,7 @@ interface RouteBreadcrumb {
 @Component({
   selector: 'app-routing-header',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink],
   template: `
     <div class="flex items-center justify-between py-2 px-3 mb-4 rounded-xl bg-white border border-slate-200/80 shadow-2xs text-xs">

@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MedicalStateService } from '../../services/medical-state.service';
 import { TriageBadgeComponent, PatientStatusBadgeComponent } from '../common/medical-badges.component';
@@ -7,6 +7,7 @@ import { Patient, HospitalAlert } from '../../types';
 @Component({
   selector: 'app-overview-dashboard',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, TriageBadgeComponent, PatientStatusBadgeComponent],
   template: `
     <div class="space-y-6 pb-12">

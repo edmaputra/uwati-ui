@@ -1,10 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MedicalStateService } from '../../services/medical-state.service';
 
 @Component({
   selector: 'app-pharmacy-view',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="space-y-6 pb-12">

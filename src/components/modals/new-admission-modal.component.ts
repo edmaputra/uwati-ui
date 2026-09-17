@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MedicalStateService } from '../../services/medical-state.service';
@@ -7,6 +7,7 @@ import { Patient, WardType, TriageLevel } from '../../types';
 @Component({
   selector: 'app-new-admission-modal',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   template: `
     <div *ngIf="state.isNewAdmissionOpen()" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
@@ -178,7 +179,7 @@ export class NewAdmissionModalComponent {
       fullName: this.fullName,
       dob: this.dob,
       age: isNaN(age) ? 35 : age,
-      gender: this.gender as any,
+      gender: this.gender,
       bloodType: this.bloodType,
       phone: '+1 (555) 392-1082',
       email: `${this.fullName.toLowerCase().replace(/\s+/g, '.')}@patient-portal.medpulse.health`,

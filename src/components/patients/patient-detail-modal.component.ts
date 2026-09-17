@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MedicalStateService } from '../../services/medical-state.service';
@@ -13,6 +13,7 @@ import { ClinicalNote, Prescription, LabResult, VitalRecord } from '../../types'
 @Component({
   selector: 'app-patient-detail-modal',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule, 
     FormsModule, 

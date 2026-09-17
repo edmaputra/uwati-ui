@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MedicalStateService } from '../../services/medical-state.service';
@@ -8,6 +8,7 @@ import { Patient, WardType, PatientStatus } from '../../types';
 @Component({
   selector: 'app-patient-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, PatientStatusBadgeComponent, TriageBadgeComponent],
   template: `
     <div class="space-y-6 pb-12">
@@ -48,7 +49,8 @@ import { Patient, WardType, PatientStatus } from '../../types';
         <div class="relative w-full md:w-80">
           <input
             type="text"
-            [(ngModel)]="searchQuery"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
             placeholder="Filter by name, MRN, bed, or physician..."
             class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 font-sans"
           />
@@ -61,7 +63,8 @@ import { Patient, WardType, PatientStatus } from '../../types';
         <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
           
           <select
-            [(ngModel)]="selectedWard"
+            [ngModel]="selectedWard()"
+            (ngModelChange)="selectedWard.set($event)"
             class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 focus:bg-white font-sans"
           >
             <option value="ALL">All Hospital Wards</option>
@@ -75,7 +78,8 @@ import { Patient, WardType, PatientStatus } from '../../types';
           </select>
 
           <select
-            [(ngModel)]="selectedStatus"
+            [ngModel]="selectedStatus()"
+            (ngModelChange)="selectedStatus.set($event)"
             class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 focus:bg-white font-sans"
           >
             <option value="ALL">All Clinical Statuses</option>
@@ -193,12 +197,15 @@ import { Patient, WardType, PatientStatus } from '../../types';
 })
 export class PatientListComponent {
   readonly state = inject(MedicalStateService);
-  searchQuery = '';
-  selectedWard: WardType | 'ALL' = 'ALL';
-  selectedStatus: PatientStatus | 'ALL' = 'ALL';
+  readonly searchQuery = signal('');
+  readonly selectedWard = signal<WardType | 'ALL'>('ALL');
+  readonly selectedStatus = signal<PatientStatus | 'ALL'>('ALL');
 
   readonly filteredPatients = computed(() => {
-    const q = this.searchQuery.toLowerCase().trim();
+    const q = this.searchQuery().toLowerCase().trim();
+    const ward = this.selectedWard();
+    const status = this.selectedStatus();
+
     return this.state.patients().filter((patient) => {
       const matchesSearch =
         !q ||
@@ -207,8 +214,8 @@ export class PatientListComponent {
         patient.bedNumber.toLowerCase().includes(q) ||
         patient.attendingPhysician.toLowerCase().includes(q);
 
-      const matchesWard = this.selectedWard === 'ALL' || patient.ward === this.selectedWard;
-      const matchesStatus = this.selectedStatus === 'ALL' || patient.status === this.selectedStatus;
+      const matchesWard = ward === 'ALL' || patient.ward === ward;
+      const matchesStatus = status === 'ALL' || patient.status === status;
 
       return matchesSearch && matchesWard && matchesStatus;
     });

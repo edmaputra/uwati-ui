@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { MedicalStateService } from '../../services/medical-state.service';
@@ -12,6 +12,7 @@ import { ApiGuideModalComponent } from '../modals/api-guide-modal.component';
 @Component({
   selector: 'app-main-layout',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     RouterOutlet,

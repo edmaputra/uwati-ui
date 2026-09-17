@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MedicalStateService } from '../../services/medical-state.service';
 import { FHIR_PATIENT_SCHEMA, API_CONTRACT_ENDPOINTS } from '../../data/mockData';
@@ -6,6 +6,7 @@ import { FHIR_PATIENT_SCHEMA, API_CONTRACT_ENDPOINTS } from '../../data/mockData
 @Component({
   selector: 'app-api-guide-modal',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div *ngIf="state.isApiGuideOpen()" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
