@@ -104,7 +104,11 @@
             "browsers": [
               "ChromiumHeadless"
             ],
-            "runnerConfig": true
+            "runnerConfig": true,
+            "coverageReporters": [
+              "lcov",
+              "text-summary"
+            ]
           }
         }
       }
