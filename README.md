@@ -160,6 +160,30 @@ npm run build
 
 The build artifacts will be output to the `dist/` directory, ready to be served by Nginx, Caddy, or any static hosting service.
 
+### Testing & Code Coverage
+
+Execute unit tests with Vitest and generate an LCOV coverage report:
+
+```bash
+npm test -- --coverage --watch=false
+```
+
+Generate the consolidated Markdown coverage summary:
+
+```bash
+python3 .agents/scripts/coverage/generate-lcov-summary.py coverage/uwati-ui/lcov.info target/coverage-summary.md --title "Angular Code Coverage Summary"
+```
+
+### Continuous Integration (CI/CD)
+
+GitHub Actions workflow is located at `.github/workflows/ci.yml`. It runs automatically on pull requests and pushes to `main`, executing:
+- Dependency installation (`npm ci` & Playwright browser setup)
+- Unit tests with coverage collection
+- Automated LCOV coverage aggregation and idempotent sticky PR commenting
+- Production bundle verification (`npm run build`)
+- Artifact uploads for coverage and production distributions
+
+
 ---
 
 ## Backend Integration & API Routing

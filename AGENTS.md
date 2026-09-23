@@ -31,10 +31,14 @@ Hospital Information System (HIS) / Healthcare Administration frontend applicati
 - Dev Server: `npm start`
 - Build: `npm run build`
 - Test: `npm test`
+- Test with Coverage: `npx ng test --watch=false --coverage`
+- Generate Coverage Summary: `python3 .agents/scripts/coverage/generate-lcov-summary.py coverage/uwati-ui/lcov.info target/coverage-summary.md --title "Angular Code Coverage Summary"`
 
 ## Agent Guidelines
 - Check `.agents/project-structure.json` for component and store locations.
 - If missing, run: `python3 .agents/scripts/scan-structure.py`.
 - Strict rule: All components MUST be standalone with `ChangeDetectionStrategy.OnPush`.
 - Strict rule: All commit messages must follow Conventional Commits (`feat:`, `fix:`, `chore:`, etc.).
+- Strict rule: Maintain a minimum of **80% line coverage** across domain and service logic (`.agents/rules/shared/git-and-ci-standards.md` & `.agents/rules/angular/angular-standards.md`).
+- CI Pipeline: Defined in `.github/workflows/ci.yml` with automated test execution, LCOV coverage aggregation, and idempotent sticky PR comments.
 

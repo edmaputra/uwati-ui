@@ -1,3 +1,25 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- GitHub Actions CI workflow (`.github/workflows/ci.yml`) with automated Playwright browser setup, Vitest execution, and LCOV coverage reporting.
+- Sticky PR coverage commenting and artifact archiving for test coverage reports and production bundles.
+- Unit tests for `AuthService`, `authGuard`, `guestGuard`, `authInterceptor`, and `TenantService`.
+- `@vitest/coverage-v8` dev dependency for Vitest coverage collection.
+
+### Changed
+- Updated `.agents` submodule to commit `4475d6e` including reusable workflows, CI templates, and LCOV coverage parser.
+- Configured `angular.json` test runner options with `lcov` and `text-summary` coverage reporters.
+- Increased unit test coverage from 77.4% to 95.3% line coverage, achieving the 80%+ passing quality gate across all scopes.
+- Updated `AGENTS.md` and `README.md` with CI pipeline guidelines, test commands, and coverage reporting documentation.
+
+---
+
 ### [coreui-free-angular-admin-template](https://coreui.io/angular/) changelog
 
 ---
